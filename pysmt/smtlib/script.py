@@ -73,7 +73,12 @@ class SmtLibCommand(namedtuple('SmtLibCommand', ['name', 'args'])):
 
         elif self.name == smtcmd.ASSERT:
             outstream.write("(%s " % self.name)
-            printer.printer(self.args[0])
+            if len(self.args) == 1:
+                printer.printer(self.args[0])
+            elif len(self.args) > 1:
+                outstream.write("(! ")
+                printer.printer(self.args[0])
+                outstream.write(" %s)" % " ".join(self.args[1:]))
             outstream.write(")")
 
         elif self.name == smtcmd.GET_VALUE:

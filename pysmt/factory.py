@@ -306,6 +306,14 @@ class Factory(object):
         self._all_qelims['shannon'] = ShannonQuantifierEliminator
         self._all_qelims['selfsub'] = SelfSubstitutionQuantifierEliminator
 
+
+    def add_interpolator(self, name, cls):
+        if name in self._all_interpolators:
+            raise SolverRedefinitionError("Interpolator %s already defined" % name)
+        self._all_interpolators[name] = cls
+        self.interpolation_preference_list.append(name)
+
+
     def _get_available_interpolators(self):
         self._all_interpolators = {}
 

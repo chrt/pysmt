@@ -111,6 +111,12 @@ class SmtLibSolver(Solver):
         self.solver_stdin.write("\n")
         self.solver_stdin.flush()
 
+    def _send_str_command(self, cmd: str):
+        """Send a command, represented as a str, to the STDIN pipe."""
+        self._debug("Sending: %s", cmd)
+        self.solver_stdin.write(cmd)
+        self.solver_stdin.flush()
+
     def _send_silent_command(self, cmd):
         """Sends a command to the STDIN pipe and awaits for acknowledgment."""
         self._send_command(cmd)
@@ -163,7 +169,7 @@ class SmtLibSolver(Solver):
         return
 
     @clear_pending_pop
-    def add_assertion(self, formula, named=None):
+    def add_assertion(self, formula, annotations=[]):
         # This is needed because Z3 (and possibly other solvers) incorrectly
         # recognize N * M * x as a non-linear term
         formula = formula.simplify()
@@ -175,7 +181,7 @@ class SmtLibSolver(Solver):
         for d in deps:
             if all(d not in dv for dv in self.declared_vars):
                 self._declare_variable(d)
-        self._send_silent_command(SmtLibCommand(smtcmd.ASSERT, [formula]))
+        self._send_silent_command(SmtLibCommand(smtcmd.ASSERT, [formula] + annotations))
 
     @clear_pending_pop
     def push(self, levels=1):

@@ -673,8 +673,8 @@ class SmtLibParser(object):
                         res = mgr.Real(frac)
 
                 except ValueError:
-                    # a string constant
-                    res = token
+                    # a string constant, which should be a variable
+                    res = mgr.get_symbol(token)
             self.cache.bind(token, res)
         return res
 
