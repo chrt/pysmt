@@ -313,7 +313,7 @@ class Z3Converter(Converter, DagWalker):
             z3.Z3_OP_MUL: lambda args, expr: self.mgr.Times(args),
             z3.Z3_OP_ADD: lambda args, expr: self.mgr.Plus(args),
             z3.Z3_OP_DIV: lambda args, expr: self.mgr.Div(args[0], args[1]),
-            z3.Z3_OP_IDIV: lambda args, expr: self.mgr.Div(args[0], args[1]),
+            z3.Z3_OP_IDIV: lambda args, expr: self.mgr.FloorDiv(args[0], args[1]),
             z3.Z3_OP_MOD: lambda args, expr: self.mgr.Mod(args[0], args[1]),
             z3.Z3_OP_IFF: lambda args, expr: self.mgr.Iff(args[0], args[1]),
             z3.Z3_OP_XOR: lambda args, expr:  self.mgr.Xor(args[0], args[1]),
