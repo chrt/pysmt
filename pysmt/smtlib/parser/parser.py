@@ -364,6 +364,8 @@ class SmtLibParser(object):
         self.Minus = functools.partial(fix_real, mgr.Minus)
         self.Times = functools.partial(fix_real, mgr.Times)
         self.Div = functools.partial(fix_real, mgr.Div)
+        self.Mod = functools.partial(fix_real, mgr.Mod)
+        self.FloorDiv = functools.partial(fix_real, mgr.FloorDiv)
         self.Ite = functools.partial(fix_real, mgr.Ite)
         self.AllDifferent = functools.partial(fix_real, mgr.AllDifferent)
 
@@ -379,6 +381,8 @@ class SmtLibParser(object):
                             '-':self._operator_adapter(self._minus_or_uminus),
                             '*':self._operator_adapter(self.Times),
                             '/':self._operator_adapter(self._division),
+                            'div':self._operator_adapter(self.FloorDiv),
+                            'mod':self._operator_adapter(self.Mod),
                             'pow':self._operator_adapter(mgr.Pow),
                             '>':self._operator_adapter(self.GT),
                             '<':self._operator_adapter(self.LT),

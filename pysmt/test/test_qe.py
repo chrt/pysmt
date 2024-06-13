@@ -30,6 +30,7 @@ from pysmt.logics import LRA, LIA, UFLIRA
 
 
 class TestQE(TestCase):
+    # FIXME: Some cases can now be handled without errors
 
     @skipIfNoSolverForLogic(LRA)
     @skipIfQENotAvailable('z3')

@@ -432,6 +432,7 @@ class MSatConverter(Converter, DagWalker):
             mathsat.MSAT_TAG_BV_ROL: self._back_bv_rol,
             mathsat.MSAT_TAG_BV_ROR: self._back_bv_ror,
             mathsat.MSAT_TAG_ARRAY_CONST: self._back_array_const,
+            mathsat.MSAT_TAG_INT_MOD_CONGR: self._back_int_mod_congr,
             # Symbols, Constants and UFs have TAG_UNKNOWN
             mathsat.MSAT_TAG_UNKNOWN: self._back_tag_unknown,
         }
@@ -454,8 +455,11 @@ class MSatConverter(Converter, DagWalker):
             mathsat.MSAT_TAG_ITE: self._sig_ite,
             mathsat.MSAT_TAG_EQ: self._sig_most_generic_bool_binary,
             mathsat.MSAT_TAG_LEQ: self._sig_most_generic_bool_binary,
-            mathsat.MSAT_TAG_PLUS:  self._sig_most_generic_bool_binary,
-            mathsat.MSAT_TAG_TIMES: self._sig_most_generic_bool_binary,
+            mathsat.MSAT_TAG_PLUS:  self._sig_most_generic_binary,
+            mathsat.MSAT_TAG_TIMES: self._sig_most_generic_binary,
+            mathsat.MSAT_TAG_DIVIDE: self._sig_most_generic_binary,
+            mathsat.MSAT_TAG_INT_MOD_CONGR: lambda term, args:\
+                types.FunctionType(types.BOOL, [types.INT, types.INT]),
             mathsat.MSAT_TAG_BV_MUL: self._sig_binary,
             mathsat.MSAT_TAG_BV_ADD: self._sig_binary,
             mathsat.MSAT_TAG_BV_UDIV:self._sig_binary,
@@ -531,6 +535,12 @@ class MSatConverter(Converter, DagWalker):
         t2 = self.env.stc.get_type(args[1])
         t = self._most_generic(t1, t2)
         return types.FunctionType(types.BOOL, [t, t])
+    
+    def _sig_most_generic_binary(self, term, args):
+        t1 = self.env.stc.get_type(args[0])
+        t2 = self.env.stc.get_type(args[1])
+        t = self._most_generic(t1, t2)
+        return types.FunctionType(t, [t, t])
 
     def _sig_unary(self, term, args):
         t = self.env.stc.get_type(args[0])
@@ -671,6 +681,14 @@ class MSatConverter(Converter, DagWalker):
         msat_type = mathsat.msat_term_get_type(term)
         pysmt_type = self._msat_type_to_type(msat_type)
         return self.mgr.Array(pysmt_type.index_type, args[0])
+
+    def _back_int_mod_congr(self, term, args):
+        fun = mathsat.msat_decl_get_name(mathsat.msat_term_get_decl(term))
+        # fun is a string of the form "`int_mod_congr_m`"
+        m = int(fun.rsplit("_", 1)[1][:-1])
+        return self.mgr.Equals(self.mgr.Int(0),
+                               self.mgr.Mod(self.mgr.Minus(args[0], args[1]),
+                                            self.mgr.Int(m)))
 
     def _back_tag_unknown(self, term, args):
         """The TAG UNKNOWN is used to represent msat functions.
@@ -983,6 +1001,25 @@ class MSatConverter(Converter, DagWalker):
             else:
                 res = mathsat.msat_make_times(self.msat_env(), res, x)
         return res
+
+    def walk_floordiv(self, formula, args, **kwargs):
+        return mathsat.msat_make_floor(
+            self.msat_env(),
+            mathsat.msat_make_divide(self.msat_env(), args[0], args[1])
+        )
+
+    def walk_mod(self, formula, args, **kwargs):
+        d = mathsat.msat_make_floor(
+            self.msat_env(),
+            mathsat.msat_make_divide(self.msat_env(), args[0], args[1])
+        )
+        n_one = mathsat.msat_make_number(self.msat_env(), "-1")
+        nd = mathsat.msat_make_times(
+                self.msat_env(),
+                mathsat.msat_make_times(self.msat_env(), n_one, args[1]),
+                d
+            )
+        return mathsat.msat_make_plus(self.msat_env(), args[0], nd)
 
     def walk_function(self, formula, args, **kwargs):
         name = formula.function_name()

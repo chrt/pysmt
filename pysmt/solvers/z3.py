@@ -313,6 +313,8 @@ class Z3Converter(Converter, DagWalker):
             z3.Z3_OP_MUL: lambda args, expr: self.mgr.Times(args),
             z3.Z3_OP_ADD: lambda args, expr: self.mgr.Plus(args),
             z3.Z3_OP_DIV: lambda args, expr: self.mgr.Div(args[0], args[1]),
+            z3.Z3_OP_IDIV: lambda args, expr: self.mgr.Div(args[0], args[1]),
+            z3.Z3_OP_MOD: lambda args, expr: self.mgr.Mod(args[0], args[1]),
             z3.Z3_OP_IFF: lambda args, expr: self.mgr.Iff(args[0], args[1]),
             z3.Z3_OP_XOR: lambda args, expr:  self.mgr.Xor(args[0], args[1]),
             z3.Z3_OP_FALSE: lambda args, expr: self.mgr.FALSE(),
@@ -881,6 +883,8 @@ class Z3Converter(Converter, DagWalker):
     walk_iff     = make_walk_binary(z3.Z3_mk_eq)
     walk_pow     = make_walk_binary(z3.Z3_mk_power)
     walk_div     = make_walk_binary(z3.Z3_mk_div)
+    walk_mod     = make_walk_binary(z3.Z3_mk_mod)
+    walk_floordiv = make_walk_binary(z3.Z3_mk_div)
     walk_bv_ult  = make_walk_binary(z3.Z3_mk_bvult)
     walk_bv_ule  = make_walk_binary(z3.Z3_mk_bvule)
     walk_bv_slt  = make_walk_binary(z3.Z3_mk_bvslt)
@@ -958,19 +962,7 @@ class Z3QuantifierEliminator(QuantifierEliminator):
                        ite_extra_rules=True).as_expr()
         res = eliminator(f).as_expr()
 
-        pysmt_res = None
-        try:
-            pysmt_res = self.converter.back(res)
-        except ConvertExpressionError:
-            if logic <= LRA:
-                raise
-            raise ConvertExpressionError(message=("Unable to represent" \
-                "expression %s in pySMT: the quantifier elimination for " \
-                "LIA is incomplete as it requires the modulus. You can " \
-                "find the Z3 expression representing the quantifier " \
-                "elimination as the attribute 'expression' of this " \
-                "exception object" % str(res)),
-                                          expression=res)
+        pysmt_res = self.converter.back(res)
 
         return pysmt_res
 
