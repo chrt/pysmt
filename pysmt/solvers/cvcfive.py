@@ -16,6 +16,7 @@
 #   limitations under the License.
 #
 from __future__ import absolute_import
+from io import StringIO
 
 from pysmt.exceptions import SolverAPINotFound
 
@@ -39,6 +40,10 @@ from pysmt.solvers.smtlib import SmtLibBasicSolver, SmtLibIgnoreMixin
 from pysmt.solvers.eager import EagerModel
 from pysmt.decorators import catch_conversion_error
 from pysmt.constants import Fraction, is_pysmt_integer, to_python_integer
+from pysmt.solvers.qelim import QuantifierEliminator
+from pysmt.logics import LIA, LRA
+from pysmt.smtlib.parser import SmtLibParser
+from pysmt.smtlib.parser.parser import Tokenizer
 
 
 class CVC5Options(SolverOptions):
@@ -228,6 +233,14 @@ class CVC5Converter(Converter, DagWalker):
             decl = self.cvc5.mkConst(cvc5_type, var.symbol_name())
             self.declared_vars[var] = decl
 
+    def back_via_smtlib(self, expr):
+        """Back convert a CVC5 Expression by translation to SMT-LIB."""
+        parser = SmtLibParser(self.env)
+        s = str(expr)
+        stream_in = StringIO(s)
+        r = parser.get_expression(Tokenizer(stream_in))
+        return r
+
     def back(self, expr):
         res = None
         if expr.isBooleanValue():
@@ -251,7 +264,7 @@ class CVC5Converter(Converter, DagWalker):
             base_value = self.back(const_)
             res = self.mgr.Array(array_type.index_type, base_value)
         else:
-            raise PysmtTypeError("Unsupported expression:", str(expr))
+            res = self.back_via_smtlib(expr)
 
         return res
 
@@ -342,6 +355,12 @@ class CVC5Converter(Converter, DagWalker):
             return self.cvc5.mkTerm(Kind.INTS_DIVISION, *args)
         else:
             return self.cvc5.mkTerm(Kind.DIVISION, *args)
+
+    def walk_floordiv(self, formula, args, **kwargs):
+        return self.cvc5.mkTerm(Kind.INTS_DIVISION, args[0], args[1])
+
+    def walk_mod(self, formula, args, **kwargs):
+        return self.cvc5.mkTerm(Kind.INTS_MODULUS, args[0], args[1])
 
     def walk_pow(self, formula, args, **kwargs):
         return self.cvc5.mkTerm(Kind.POW, args[0], self.cvc5.mkTerm(Kind.TO_REAL, args[1]))
@@ -546,3 +565,25 @@ class CVC5Converter(Converter, DagWalker):
         old_var_list = [self.walk_symbol(x, []) for x in variables]
         new_formula = formula.substitute(old_var_list, new_var_list)
         return (new_formula, new_var_list)
+
+
+class CVC5QuantifierEliminator(QuantifierEliminator):
+
+    LOGICS = [LIA, LRA]
+
+    def __init__(self, environment, logic=None):
+        QuantifierEliminator.__init__(self)
+        self.environment = environment
+        self.logic = logic
+        self.cvc5 = cvc5.Solver()
+        self.converter = CVC5Converter(environment, cvc5=self.cvc5)
+
+    def eliminate_quantifiers(self, formula):
+        f = self.converter.convert(formula)
+        res = self.cvc5.getQuantifierElimination(f)
+        pysmt_res = self.converter.back(res)
+
+        return pysmt_res
+
+    def _exit(self):
+        pass

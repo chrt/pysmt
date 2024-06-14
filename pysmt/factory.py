@@ -40,7 +40,7 @@ from pysmt.solvers.portfolio import Portfolio
 
 DEFAULT_SOLVER_PREFERENCE_LIST = ['msat', 'z3', 'cvc5', 'yices', 'btor',
                                   'picosat', 'bdd', 'cvc4']
-DEFAULT_QELIM_PREFERENCE_LIST = ['z3', 'msat_fm', 'msat_lw', 'bdd',
+DEFAULT_QELIM_PREFERENCE_LIST = ['z3', 'cvc5', 'msat_fm', 'msat_lw', 'bdd',
                                  'shannon', 'selfsub']
 DEFAULT_INTERPOLATION_PREFERENCE_LIST = ['msat']
 DEFAULT_LOGIC = QF_UFLIRA
@@ -291,6 +291,12 @@ class Factory(object):
         try:
             from pysmt.solvers.z3 import Z3QuantifierEliminator
             self._all_qelims['z3'] = Z3QuantifierEliminator
+        except SolverAPINotFound:
+            pass
+
+        try:
+            from pysmt.solvers.cvcfive import CVC5QuantifierEliminator
+            self._all_qelims['cvc5'] = CVC5QuantifierEliminator
         except SolverAPINotFound:
             pass
 

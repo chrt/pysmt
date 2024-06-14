@@ -16,6 +16,7 @@
 #   limitations under the License.
 #
 from __future__ import absolute_import
+from io import StringIO
 
 from pysmt.exceptions import SolverAPINotFound
 
@@ -46,7 +47,7 @@ from pysmt.decorators import clear_pending_pop, catch_conversion_error
 from pysmt.logics import LRA, LIA, QF_UFLRA, PYSMT_LOGICS
 from pysmt.oracles import get_logic
 from pysmt.constants import Fraction, Numeral, is_pysmt_integer, to_python_integer
-
+from pysmt.smtlib.parser import SmtLibZ3Parser
 
 # patch z3api
 z3.is_ite = lambda x: z3.is_app_of(x, z3.Z3_OP_ITE)
@@ -587,8 +588,6 @@ class Z3Converter(Converter, DagWalker):
 
     def back_via_smtlib(self, expr):
         """Back convert a Z3 Expression by translation to SMT-LIB."""
-        from io import StringIO
-        from pysmt.smtlib.parser import SmtLibZ3Parser
         parser = SmtLibZ3Parser(self.env)
 
         z3.Z3_set_ast_print_mode(expr.ctx.ref(), z3.Z3_PRINT_SMTLIB2_COMPLIANT)
