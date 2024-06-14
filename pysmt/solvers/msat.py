@@ -433,6 +433,7 @@ class MSatConverter(Converter, DagWalker):
             mathsat.MSAT_TAG_BV_ROR: self._back_bv_ror,
             mathsat.MSAT_TAG_ARRAY_CONST: self._back_array_const,
             mathsat.MSAT_TAG_INT_MOD_CONGR: self._back_int_mod_congr,
+            mathsat.MSAT_TAG_FLOOR: self._back_floor,
             # Symbols, Constants and UFs have TAG_UNKNOWN
             mathsat.MSAT_TAG_UNKNOWN: self._back_tag_unknown,
         }
@@ -458,6 +459,8 @@ class MSatConverter(Converter, DagWalker):
             mathsat.MSAT_TAG_PLUS:  self._sig_most_generic_binary,
             mathsat.MSAT_TAG_TIMES: self._sig_most_generic_binary,
             mathsat.MSAT_TAG_DIVIDE: self._sig_most_generic_binary,
+            mathsat.MSAT_TAG_FLOOR: lambda term, args:\
+                types.FunctionType(types.INT, [types.REAL]),
             mathsat.MSAT_TAG_INT_MOD_CONGR: lambda term, args:\
                 types.FunctionType(types.BOOL, [types.INT, types.INT]),
             mathsat.MSAT_TAG_BV_MUL: self._sig_binary,
@@ -689,6 +692,18 @@ class MSatConverter(Converter, DagWalker):
         return self.mgr.Equals(self.mgr.Int(0),
                                self.mgr.Mod(self.mgr.Minus(args[0], args[1]),
                                             self.mgr.Int(m)))
+
+    def _back_floor(self, term, args):
+        assert args[0].is_times()
+        assert len(args[0].args()) == 2
+        c, x = args[0].arg(0), args[0].arg(1)
+        if not c.is_real_constant():
+            c, x = x, c
+        assert c.is_real_constant() and x.is_toreal()
+        n, d = self.mgr.Int(c.constant_value().numerator),\
+               self.mgr.Int(c.constant_value().denominator)
+        m = x.arg(0)
+        return self.mgr.FloorDiv(self.mgr.Times(m, n), d)
 
     def _back_tag_unknown(self, term, args):
         """The TAG UNKNOWN is used to represent msat functions.

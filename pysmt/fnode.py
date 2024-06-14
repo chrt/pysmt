@@ -44,7 +44,8 @@ from pysmt.operators import (FORALL, EXISTS, AND, OR, NOT, IMPLIES, IFF,
                              STR_TO_INT, INT_TO_STR,
                              STR_CHARAT,
                              ARRAY_SELECT, ARRAY_STORE, ARRAY_VALUE,
-                             ALGEBRAIC_CONSTANT)
+                             ALGEBRAIC_CONSTANT,
+                             FLOORDIV)
 
 from pysmt.operators import  (BOOL_OPERATORS, THEORY_OPERATORS,
                               BV_OPERATORS, IRA_OPERATORS, ARRAY_OPERATORS,
@@ -304,6 +305,10 @@ class FNode(object):
     def is_div(self):
         """Test whether the node is the Division operator."""
         return self.node_type() == DIV
+    
+    def is_floor_div(self):
+        """Test whether the node is the Floor Division operator."""
+        return self.node_type() == FLOORDIV
 
     def is_implies(self):
         """Test whether the node is the Implies operator."""
