@@ -694,6 +694,7 @@ class MSatConverter(Converter, DagWalker):
                                             self.mgr.Int(m)))
 
     def _back_floor(self, term, args):
+        return self.mgr.ToInt(args[0])
         assert args[0].is_times()
         assert len(args[0].args()) == 2
         c, x = args[0].arg(0), args[0].arg(1)

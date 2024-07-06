@@ -457,6 +457,13 @@ class Simplifier(pysmt.walkers.DagWalker):
             return self.manager.Real(args[0].constant_value())
         return self.manager.ToReal(args[0])
 
+    def walk_toint(self, formula, args, **kwargs):
+        assert len(args) == 1
+        if args[0].is_constant():
+            assert args[0].is_real_constant()
+            return self.manager.Int(int(math.floor(args[0].constant_value())))
+        return self.manager.ToInt(args[0])
+
     def walk_bv_and(self, formula, args, **kwargs):
         simplified = None
         width = formula.bv_width()

@@ -109,6 +109,9 @@ class IdentityDagWalker(DagWalker):
     def walk_toreal(self, formula, args, **kwargs):
         return self.mgr.ToReal(args[0])
 
+    def walk_toint(self, formula, args, **kwargs):
+        return self.mgr.ToInt(args[0])
+
     def walk_bv_constant(self, formula, **kwargs):
         return self.mgr.BV(formula.constant_value(), formula.bv_width())
 

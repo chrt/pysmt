@@ -398,6 +398,7 @@ class SmtLibParser(object):
                             'ite':self._operator_adapter(self.Ite),
                             'distinct':self._operator_adapter(self.AllDifferent),
                             'to_real':self._operator_adapter(mgr.ToReal),
+                            'to_int':self._operator_adapter(mgr.ToInt),
                             'concat':self._operator_adapter(mgr.BVConcat),
                             'bvnot':self._operator_adapter(mgr.BVNot),
                             'bvand':self._operator_adapter(mgr.BVAnd),

@@ -253,6 +253,11 @@ class FormulaManager(object):
         return self.create_node(node_type=op.FLOORDIV,
                                 args=(left, right))
 
+    def ToInt(self, arg):
+        """ Creates an expression of the form: to_int(arg) """
+        return self.create_node(node_type=op.TOINT,
+                                args=(arg,))
+
     def Pow(self, base, exponent):
         """ Creates the n-th power of the base.
 

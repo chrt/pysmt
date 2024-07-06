@@ -183,6 +183,7 @@ class HRLexer(Lexer):
             Rule(r"(forall)", Quantifier(self.mgr.ForAll, 20), False),#
             Rule(r"(exists)", Quantifier(self.mgr.Exists, 20), False),#
             Rule(r"(ToReal)", UnaryOpAdapter(self.mgr.ToReal, 100), False),#
+            Rule(r"(to_int)", UnaryOpAdapter(self.mgr.ToInt, 100), False),#
             Rule(r"(str\.len)", FunctionCallAdapter(self.mgr.StrLength, 100), False), # str_length
             Rule(r"(str\.\+\+)", FunctionCallAdapter(self.mgr.StrConcat, 100), False), # str_concat
             Rule(r"(str\.at)", FunctionCallAdapter(self.mgr.StrCharAt, 100), False), # str_charat

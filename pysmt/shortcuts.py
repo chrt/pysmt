@@ -214,6 +214,11 @@ def Mod(left, right):
     return get_env().formula_manager.Mod(left, right)
 
 
+def ToInt(formula):
+    """Explicit cast of a term into an Int term."""
+    return get_env().formula_manager.ToInt(formula)
+
+
 def Equals(left, right):
     r""".. math:: l = r"""
     return get_env().formula_manager.Equals(left, right)
