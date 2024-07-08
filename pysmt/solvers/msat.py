@@ -1048,6 +1048,9 @@ class MSatConverter(Converter, DagWalker):
         # In mathsat toreal is implicit
         return args[0]
 
+    def walk_toint(self, formula, args, **kwargs):
+        return mathsat.msat_make_floor(self.msat_env(), args[0])
+
     def walk_bv_tonatural(self, formula, args, **kwargs):
         return mathsat.msat_make_int_from_ubv(self.msat_env(), args[0])
 
