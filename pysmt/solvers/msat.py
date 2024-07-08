@@ -25,7 +25,7 @@ try:
 except ImportError:
     raise SolverAPINotFound
 
-from pysmt.logics import LRA, LIA, QF_UFLIA, QF_UFLRA, QF_BV, PYSMT_QF_LOGICS
+from pysmt.logics import LRA, LIA, QF_UFLIA, QF_UFLRA, QF_LIRA, QF_BV, PYSMT_QF_LOGICS
 from pysmt.oracles import get_logic
 
 import pysmt.operators as op
@@ -1247,7 +1247,7 @@ if hasattr(mathsat, "MSAT_EXIST_ELIM_ALLSMT_FM"):
 
 class MSatInterpolator(Interpolator):
 
-    LOGICS = [QF_UFLIA, QF_UFLRA, QF_BV]
+    LOGICS = [QF_UFLIA, QF_UFLRA, QF_LIRA, QF_BV]
 
     def __init__(self, environment, logic=None):
         Interpolator.__init__(self)
